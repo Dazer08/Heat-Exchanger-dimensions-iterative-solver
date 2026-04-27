@@ -1,0 +1,259 @@
+%% constants
+sigma = 0.363;
+kc = 0.36;
+ke = 0.42;
+rh = 0.385*10^-3;
+l = 0.001143;
+Dh = 0.00154;
+Cmin = 1853.44;
+Cmax = 2174.5;
+NTU = 7.79;
+%% hot gas
+G_h = 14.028;
+rho_in_h = 0.4751;
+rho_out_h = 0.9504;
+specificmass_h = 0.5*((1/rho_in_h)+(1/rho_out_h));
+Cf_h = 0.07;
+L_h = 0.311;
+mew_h = 0.0000392;
+cp_h = 1116.5;
+Pr_h = 0.718;
+A = 95.73;
+Ao_h = 0.1183;
+Afr_h = 0.326;
+%% cold air
+G_c = 17.2118;
+rho_in_c = 1.4728;
+rho_out_c = 0.7160;
+specificmass_c = 0.5*((1/rho_in_c)+(1/rho_out_c));
+Cf_c = 0.056;
+L_c = 0.317;
+mew_c = 0.0000346;
+cp_c = 1080.53;
+Pr_c = 0.698;
+A = 95.73;
+Ao_c = 0.1162;
+Afr_c = 0.32;
+%% initial pressure drops
+delta_P_h0 = (G_h^2 / (2*rho_in_h))*(1 - sigma^2 +kc+ (2*((rho_in_h/rho_out_h) -1
+))+(Cf_h*L_h*rho_in_h*specificmass_h/rh)-((rho_in_h/rho_out_h)*(1-sigma^2 -ke)))
+delta_P_c0 = (G_c^2 / (2*rho_in_c))*(1 - sigma^2 +kc+ (2*((rho_in_c/rho_out_c) -1
+))+(Cf_c*L_c*rho_in_c*specificmass_c/rh)-((rho_in_c/rho_out_c)*(1-sigma^2 -ke)))
+%% iteration 1
+delta_P_spec_h = 9050;
+G_h = ((2*rho_in_h*delta_P_spec_h)/ (1 - sigma^2 +kc+ (2*((rho_in_h/rho_out_h) -1
+))+(Cf_h*L_h*rho_in_h*specificmass_h/rh)-((rho_in_h/rho_out_h)*(1-sigma^2 -ke))))^0.5;
+Re = G_h*Dh/mew_h;
+%for Re = 559.41
+jH = 0.017;
+Cf_h = 0.068;
+h = jH*G_h*cp_h*Pr_h^(-2/3);
+m = ((h*0.006564)/(18*0.32436*10^-6))^0.5;
+eff_f = tanh(m*l)/(m*l)
+eff_o = 1-((0.785)*(1-eff_f));
+eff_o_h = eff_o;
+h_h = h;
+delta_P_spec_c = 8790;
+G_c = ((2*rho_in_c*delta_P_spec_c)/ (1 - sigma^2 +kc+ (2*((rho_in_c/rho_out_c) -1
+))+(Cf_c*L_c*rho_in_c*specificmass_c/rh)-((rho_in_c/rho_out_c)*(1-sigma^2 -ke))))^0.5;
+Re = G_c*Dh/mew_c;
+%for Re = 838.82
+jH = 0.0145;
+Cf_c = 0.054;
+h = jH*G_c*cp_c*Pr_c^(-2/3);
+m = ((h*0.006564)/(18*0.32436*10^-6))^0.5;
+eff_f = tanh(m*l)/(m*l);
+eff_o = 1-((0.785)*(1-eff_f));
+eff_o_c = eff_o;
+h_c = h;
+% U calculation
+L_3 = Afr_h/L_c;
+Np = floor((L_3-0.00249-(2*0.0005))/(0.00249+0.00249+(2*0.0005)));
+Aw = L_c*L_h*((2*Np)+2);
+U = 1/((1/(eff_o_c*h_c))+(1/(eff_o_h*h_h))+((0.0005*A)/(18*Aw)));
+U = round(U,2);
+%core dimensions hot
+A = NTU*Cmin/U;
+Ao_h = 1.66/G_h;
+Afr_h = Ao_h/sigma;
+L = (0.00154*A)/(4*Ao_h);
+L_h = L;
+%core dimensions cold
+A = NTU*Cmin/U;
+Ao_c = 2/G_c;
+Afr_c = Ao_c/sigma;
+L = (0.00154*A)/(4*Ao_c);
+L_c = L;
+%Pressure drops - iteration 1
+delta_P_h1 = (G_h^2 / (2*rho_in_h))*(1 - sigma^2 +kc+ (2*((rho_in_h/rho_out_h) -1
+))+(Cf_h*L_h*rho_in_h*specificmass_h/rh)-((rho_in_h/rho_out_h)*(1-sigma^2 -ke)))
+delta_P_c1 = (G_c^2 / (2*rho_in_c))*(1 - sigma^2 +kc+ (2*((rho_in_c/rho_out_c) -1
+))+(Cf_c*L_c*rho_in_c*specificmass_c/rh)-((rho_in_c/rho_out_c)*(1-sigma^2 -ke)))
+%% iteration 2
+delta_P_spec_h = 9050;
+G_h = ((2*rho_in_h*delta_P_spec_h)/ (1 - sigma^2 +kc+ (2*((rho_in_h/rho_out_h) -1
+))+(Cf_h*L_h*rho_in_h*specificmass_h/rh)-((rho_in_h/rho_out_h)*(1-sigma^2 -ke))))^0.5;
+Re = G_h*Dh/mew_h;
+%for Re = 568
+jH = 0.0173;
+Cf = 0.069;
+h = jH*G_h*cp_h*Pr_h^(-2/3);
+m = ((h*0.006564)/(18*0.32436*10^-6))^0.5;
+eff_f = tanh(m*l)/(m*l)
+eff_o = 1-((0.785)*(1-eff_f));
+eff_o_h = eff_o;
+h_h = h;
+delta_P_spec_c = 8790;
+G_c = ((2*rho_in_c*delta_P_spec_c)/ (1 - sigma^2 +kc+ (2*((rho_in_c/rho_out_c) -1
+))+(Cf_c*L_c*rho_in_c*specificmass_c/rh)-((rho_in_c/rho_out_c)*(1-sigma^2 -ke))))^0.5;
+Re = G_c*Dh/mew_c;
+%for Re = 825
+jH = 0.0147;
+Cf = 0.055;
+h = jH*G_c*cp_c*Pr_c^(-2/3);
+m = ((h*0.006564)/(18*0.32436*10^-6))^0.5;
+eff_f = tanh(m*l)/(m*l);
+eff_o = 1-((0.785)*(1-eff_f));
+eff_o_c = eff_o;
+h_c = h;
+% U calculation
+L_3 = Afr_h/L_c;
+Np = floor((L_3-0.00249-(2*0.0005))/(0.00249+0.00249+(2*0.0005)));
+Aw = L_c*L_h*((2*Np)+2);
+U = 1/((1/(eff_o_c*h_c))+(1/(eff_o_h*h_h))+((0.0005*A)/(18*Aw)));
+U = round(U,2);
+%core dimensions hot
+A = NTU*Cmin/U;
+Ao_h = 1.66/G_h;
+Afr_h = Ao_h/sigma;
+L = (0.00154*A)/(4*Ao_h);
+L_h = L;
+%core dimensions cold
+A = NTU*Cmin/U;
+Ao_c = 2/G_c;
+Afr_c = Ao_c/sigma;
+L = (0.00154*A)/(4*Ao_c);
+L_c = L;
+%Pressure drops - iteration 1
+delta_P_h2 = (G_h^2 / (2*rho_in_h))*(1 - sigma^2 +kc+ (2*((rho_in_h/rho_out_h) -1
+))+(Cf_h*L_h*rho_in_h*specificmass_h/rh)-((rho_in_h/rho_out_h)*(1-sigma^2 -ke)))
+delta_P_c2 = (G_c^2 / (2*rho_in_c))*(1 - sigma^2 +kc+ (2*((rho_in_c/rho_out_c) -1
+))+(Cf_c*L_c*rho_in_c*specificmass_c/rh)-((rho_in_c/rho_out_c)*(1-sigma^2 -ke)))
+%% iteration 3
+delta_P_spec_h = 9050;
+G_h = ((2*rho_in_h*delta_P_spec_h)/ (1 - sigma^2 +kc+ (2*((rho_in_h/rho_out_h) -1
+))+(Cf_h*L_h*rho_in_h*specificmass_h/rh)-((rho_in_h/rho_out_h)*(1-sigma^2 -ke))))^0.5;
+Re = G_h*Dh/mew_h;
+%for Re = 560
+jH = 0.0175;
+Cf = 0.07;
+h = jH*G_h*cp_h*Pr_h^(-2/3);
+m = ((h*0.006564)/(18*0.32436*10^-6))^0.5;
+eff_f = tanh(m*l)/(m*l)
+eff_o = 1-((0.785)*(1-eff_f));
+eff_o_h = eff_o;
+h_h = h;
+delta_P_spec_c = 8790;
+G_c = ((2*rho_in_c*delta_P_spec_c)/ (1 - sigma^2 +kc+ (2*((rho_in_c/rho_out_c) -1
+))+(Cf_c*L_c*rho_in_c*specificmass_c/rh)-((rho_in_c/rho_out_c)*(1-sigma^2 -ke))))^0.5;
+Re = G_c*Dh/mew_c;
+%for Re = 824.36
+jH = 0.0147;
+Cf = 0.055;
+h = jH*G_c*cp_c*Pr_c^(-2/3);
+m = ((h*0.006564)/(18*0.32436*10^-6))^0.5;
+eff_f = tanh(m*l)/(m*l);
+eff_o = 1-((0.785)*(1-eff_f));
+eff_o_c = eff_o;
+h_c = h;
+% U calculation
+L_3 = Afr_h/L_c;
+Np = floor((L_3-0.00249-(2*0.0005))/(0.00249+0.00249+(2*0.0005)));
+Aw = L_c*L_h*((2*Np)+2);
+U = 1/((1/(eff_o_c*h_c))+(1/(eff_o_h*h_h))+((0.0005*A)/(18*Aw)));
+U = round(U,2);
+%core dimensions hot
+A = NTU*Cmin/U;
+Ao_h = 1.66/G_h;
+Afr_h = Ao_h/sigma;
+L = (0.00154*A)/(4*Ao_h);
+L_h = L;
+%core dimensions cold
+A = NTU*Cmin/U;
+Ao_c = 2/G_c;
+Afr_c = Ao_c/sigma;
+L = (0.00154*A)/(4*Ao_c);
+L_c = L;
+%Pressure drops - iteration 1
+delta_P_h3 = (G_h^2 / (2*rho_in_h))*(1 - sigma^2 +kc+ (2*((rho_in_h/rho_out_h) -1
+))+(Cf_h*L_h*rho_in_h*specificmass_h/rh)-((rho_in_h/rho_out_h)*(1-sigma^2 -ke)))
+delta_P_c3 = (G_c^2 / (2*rho_in_c))*(1 - sigma^2 +kc+ (2*((rho_in_c/rho_out_c) -1
+))+(Cf_c*L_c*rho_in_c*specificmass_c/rh)-((rho_in_c/rho_out_c)*(1-sigma^2 -ke)))
+%% iteration 4
+delta_P_spec_h = 9050;
+G_h = ((2*rho_in_h*delta_P_spec_h)/ (1 - sigma^2 +kc+ (2*((rho_in_h/rho_out_h) -1
+))+(Cf_h*L_h*rho_in_h*specificmass_h/rh)-((rho_in_h/rho_out_h)*(1-sigma^2 -ke))))^0.5;
+Re = G_h*Dh/mew_h;
+%for Re = 560.35
+jH = 0.0175;
+Cf = 0.07;
+h = jH*G_h*cp_h*Pr_h^(-2/3);
+m = ((h*0.006564)/(18*0.32436*10^-6))^0.5;
+eff_f = tanh(m*l)/(m*l)
+eff_o = 1-((0.785)*(1-eff_f));
+eff_o_h = eff_o;
+h_h = h;
+delta_P_spec_c = 8790;
+G_c = ((2*rho_in_c*delta_P_spec_c)/ (1 - sigma^2 +kc+ (2*((rho_in_c/rho_out_c) -1
+))+(Cf_c*L_c*rho_in_c*specificmass_c/rh)-((rho_in_c/rho_out_c)*(1-sigma^2 -ke))))^0.5;
+Re = G_c*Dh/mew_c;
+%for Re = 824.36
+jH = 0.0147;
+Cf = 0.055;
+h = jH*G_c*cp_c*Pr_c^(-2/3);
+m = ((h*0.006564)/(18*0.32436*10^-6))^0.5;
+eff_f = tanh(m*l)/(m*l);
+eff_o = 1-((0.785)*(1-eff_f));
+eff_o_c = eff_o;
+h_c = h;
+% U calculation
+L_3 = Afr_h/L_c;
+Np = floor((L_3-0.00249-(2*0.0005))/(0.00249+0.00249+(2*0.0005)));
+Aw = L_c*L_h*((2*Np)+2);
+U = 1/((1/(eff_o_c*h_c))+(1/(eff_o_h*h_h))+((0.0005*A)/(18*Aw)));
+U = round(U,2);
+%core dimensions hot
+A = NTU*Cmin/U;
+Ao_h = 1.66/G_h;
+Afr_h = Ao_h/sigma;
+L = (0.00154*A)/(4*Ao_h);
+L_h = L;
+%core dimensions cold
+A = NTU*Cmin/U;
+Ao_c = 2/G_c;
+Afr_c = Ao_c/sigma;
+L = (0.00154*A)/(4*Ao_c);
+L_c = L;
+%Pressure drops - iteration 1
+delta_P_h4 = (G_h^2 / (2*rho_in_h))*(1 - sigma^2 +kc+ (2*((rho_in_h/rho_out_h) -1
+))+(Cf_h*L_h*rho_in_h*specificmass_h/rh)-((rho_in_h/rho_out_h)*(1-sigma^2 -ke)))
+delta_P_c4 = (G_c^2 / (2*rho_in_c))*(1 - sigma^2 +kc+ (2*((rho_in_c/rho_out_c) -1
+))+(Cf_c*L_c*rho_in_c*specificmass_c/rh)-((rho_in_c/rho_out_c)*(1-sigma^2 -ke)))
+clc
+%Pressure drop after 4th iteration has an error less than 1 percent from
+%give values of pressure drop
+delta_P_h1
+delta_P_c1
+delta_P_h2
+delta_P_c2
+delta_P_h3
+delta_P_c3
+delta_P_gas_final = delta_P_h4
+delta_P_air_final = delta_P_c4
+Error_percent_gas = abs(delta_P_gas_final-delta_P_spec_h)/delta_P_spec_h * 100
+Error_percent_air = abs(delta_P_air_final-delta_P_spec_c)/delta_P_spec_c * 100
+%Core dimensions of Heat Exchanger
+Lg = L_h
+La = L_c
+L = L_3
+A
